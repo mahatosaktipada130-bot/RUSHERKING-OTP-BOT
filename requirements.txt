@@ -1,5 +1,2 @@
-python-telegram-bot
-requests
-faker
-urllib3
-flask
+pyTelegramBotAPI
+instaloader
