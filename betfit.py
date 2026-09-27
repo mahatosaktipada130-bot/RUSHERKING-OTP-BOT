@@ -31,7 +31,7 @@ except ImportError:
 # ============================================================================
 
 TELEGRAM_BOT_TOKEN = "8692806613:AAH1UFtLjWMpg48UKVi325MHAga4_SctNHY"      
-AUTHORIZED_USER_ID = 8645142724                  # Yahan apni Telegram Numeric ID daalna mat bhoolna!
+AUTHORIZED_USER_ID = 8645142724                  # Apni Telegram Numeric ID
 
 BASE_URL     = "https://api.betfit.in"
 MSG91_BASE   = "https://control.msg91.com/api/v5/widget"
@@ -128,12 +128,64 @@ def append_used_number(mobile_number):
             pass
 
 def load_panels():
-    if not os.path.exists(PANELS_FILE): return []
-    try:
-        with open(PANELS_FILE) as f:
-            return json.load(f).get("panels", [])
-    except Exception:
-        return []
+    # Saare Firebase panels ab direct yahan set kar diye gaye hain
+    return [
+        "https://sanjay-16691-default-rtdb.firebaseio.com",
+        "https://jamesbondd5-default-rtdb.firebaseio.com",
+        "https://admin-39ss-default-rtdb.firebaseio.com",
+        "https://raja-singh-admin-default-rtdb.firebaseio.com",
+        "https://anup-1413-default-rtdb.firebaseio.com",
+        "https://rambhai-2c356-default-rtdb.firebaseio.com",
+        "https://birend-b39e9-default-rtdb.firebaseio.com",
+        "https://dhiko0909-default-rtdb.firebaseio.com",
+        "https://kichudjdudh-default-rtdb.firebaseio.com",
+        "https://sunil-da-default-rtdb.firebaseio.com",
+        "https://sumit1-82dcd-default-rtdb.firebaseio.com",
+        "https://nimayo-589a8-default-rtdb.firebaseio.com",
+        "https://kammarene-default-rtdb.firebaseio.com",
+        "https://jdjfjiiii-default-rtdb.firebaseio.com",
+        "https://adpanel37-default-rtdb.firebaseio.com",
+        "https://whithex-741e0-default-rtdb.firebaseio.com",
+        "https://sarita-setup-default-rtdb.firebaseio.com",
+        "https://rantuwnzusjsjsndhej6sb-default-rtdb.firebaseio.com",
+        "https://my-penel-maxjoker98-default-rtdb.firebaseio.com",
+        "https://suman0h55-default-rtdb.firebaseio.com",
+        "https://kkdkumar-4e971-default-rtdb.firebaseio.com",
+        "https://rojam-ff090-default-rtdb.firebaseio.com",
+        "https://worokahre-default-rtdb.firebaseio.com",
+        "https://uffuuf-d1a3c-default-rtdb.firebaseio.com",
+        "https://thomas-maderchod-default-rtdb.firebaseio.com",
+        "https://naina-singh-default-rtdb.firebaseio.com",
+        "https://maxjoker98-2cdfe-default-rtdb.firebaseio.com",
+        "https://barik-a53e5-default-rtdb.firebaseio.com",
+        "https://rto8-7f24f-default-rtdb.firebaseio.com",
+        "https://raj-panel-3e09a-default-rtdb.firebaseio.com",
+        "https://rikiad-d2c69-default-rtdb.firebaseio.com",
+        "https://fatmaadminpanel-default-rtdb.firebaseio.com",
+        "https://amit-ka-71-default-rtdb.firebaseio.com",
+        "https://blrm-c65dd-default-rtdb.firebaseio.com",
+        "https://axis-c4bd3-default-rtdb.firebaseio.com",
+        "https://hshshhs-51f68-default-rtdb.firebaseio.com",
+        "https://dabu-a08f4-default-rtdb.firebaseio.com",
+        "https://mrrrrrrrr-8a5c1-default-rtdb.firebaseio.com",
+        "https://bali-7acc3-default-rtdb.firebaseio.com",
+        "https://lol-3e5e7-default-rtdb.firebaseio.com",
+        "https://nitish232626-default-rtdb.firebaseio.com",
+        "https://jnzbczbkjgzkg-default-rtdb.firebaseio.com",
+        "https://bablu-boss-default-rtdb.firebaseio.com",
+        "https://sanjana-admin-panel-default-rtdb.firebaseio.com",
+        "https://rtoadmin-49319-default-rtdb.firebaseio.com",
+        "https://testing-848ad-default-rtdb.firebaseio.com",
+        "https://rajvip-default-rtdb.firebaseio.com",
+        "https://emesh-94556-default-rtdb.firebaseio.com",
+        "https://rosni-9bb5c-default-rtdb.firebaseio.com",
+        "https://android-bhai-6b609-default-rtdb.firebaseio.com",
+        "https://premmiiii-default-rtdb.firebaseio.com",
+        "https://gautam-febce-default-rtdb.firebaseio.com",
+        "https://pornllllll-default-rtdb.firebaseio.com",
+        "https://rto-office-e1c0c-default-rtdb.firebaseio.com",
+        "https://alok5u2-default-rtdb.firebaseio.com"
+    ]
 
 def parse_panel_link(link):
     if not link: return None
@@ -405,7 +457,7 @@ def run_automation_script():
     global IP_BLOCKED
     IP_BLOCKED = False
     panels = load_panels()
-    if not panels: return "❌ No panels found! Pehle /sendpanel se panels.json file bhejo."
+    if not panels: return "❌ No panels found!"
 
     used_numbers = load_used_numbers()
     stats = {"success": 0, "already_registered": 0, "already_used_skip": 0, "otp_send_fail": 0, "otp_timeout": 0, "otp_verify_fail": 0, "login_fail": 0, "exceptions": 0, "ip_blocked_skipped": 0}
@@ -466,21 +518,10 @@ async def start_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != AUTHORIZED_USER_ID: return
     await update.message.reply_text(
         "⚡ **BetFit Automation Bot**\n\n"
-        "📁 `/sendpanel` - Chat me `panels.json` file bhej kar save karo\n"
         "🚀 `/run` - Automation start karo\n"
         "📊 `/status` - Check karo script chal rahi hai ya nahi\n"
         "📥 `/file` - Generated tokens file download karo"
     )
-
-async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    if update.effective_user.id != AUTHORIZED_USER_ID: return
-    document = update.message.document
-    if document and document.file_name.endswith('.json'):
-        file = await context.bot.get_file(document.file_id)
-        await file.download_to_drive(PANELS_FILE)
-        await update.message.reply_text("✅ `panels.json` successfully save ho gayi hai! Ab aap `/run` command use kar sakte hain.")
-    else:
-        await update.message.reply_text("❌ Kripya valid `.json` file bhejiye.")
 
 async def run_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     global is_running
@@ -501,7 +542,6 @@ async def run_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
             result_msg = f"❌ Error: {str(e)}"
         is_running = False
         
-        # Completion message bhejne ke liye
         import asyncio
         async def send_msg():
             bot = context.bot
@@ -532,7 +572,6 @@ def main():
     app.add_handler(CommandHandler("run", run_cmd))
     app.add_handler(CommandHandler("status", status_cmd))
     app.add_handler(CommandHandler("file", file_cmd))
-    app.add_handler(MessageHandler(filters.Document.ALL, handle_document))
     
     app.run_polling()
 
