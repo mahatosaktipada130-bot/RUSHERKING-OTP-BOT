@@ -30,8 +30,8 @@ except ImportError:
 #  ██  CONFIG & TELEGRAM SETTINGS  ██
 # ============================================================================
 
-TELEGRAM_BOT_TOKEN = "YOUR_BOT_TOKEN_HERE"      # Yahan apna BotFather wala token daalo
-AUTHORIZED_USER_ID = 123456789                  # Apni Telegram Numeric User ID daalo
+TELEGRAM_BOT_TOKEN = "8692806613:AAH1UFtLjWMpg48UKVi325MHAga4_SctNHY"      # Yahan apna BotFather wala token daalo
+AUTHORIZED_USER_ID = 8645142724                  # Apni Telegram Numeric User ID daalo
 
 BASE_URL     = "https://api.betfit.in"
 MSG91_BASE   = "https://control.msg91.com/api/v5/widget"
