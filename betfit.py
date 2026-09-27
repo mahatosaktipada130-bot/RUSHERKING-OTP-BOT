@@ -17,7 +17,7 @@ urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 from flask import Flask
 from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 
 try:
     from faker import Faker
@@ -30,8 +30,8 @@ except ImportError:
 #  ██  CONFIG & TELEGRAM SETTINGS  ██
 # ============================================================================
 
-TELEGRAM_BOT_TOKEN = "8692806613:AAH1UFtLjWMpg48UKVi325MHAga4_SctNHY"      # Yahan apna BotFather wala token daalo
-AUTHORIZED_USER_ID = 8645142724                  # Apni Telegram Numeric User ID daalo
+TELEGRAM_BOT_TOKEN = "8692806613:AAH1UFtLjWMpg48UKVi325MHAga4_SctNHY"      
+AUTHORIZED_USER_ID = 8645142724                  # Yahan apni Telegram Numeric ID daalna mat bhoolna!
 
 BASE_URL     = "https://api.betfit.in"
 MSG91_BASE   = "https://control.msg91.com/api/v5/widget"
@@ -39,7 +39,7 @@ MSG91_BASE   = "https://control.msg91.com/api/v5/widget"
 WIDGET_ID    = "356671646c71373831333038"
 TOKEN_AUTH   = "454703TqlUQcFV6850eba4P1"
 
-REFERRAL_CODE = "C8C4F1"
+REFERRAL_CODE = "978702DC"
 COUNTRY       = "india"
 DEVICE_ID     = "V417IR"
 GENDER        = "Male"
@@ -405,7 +405,7 @@ def run_automation_script():
     global IP_BLOCKED
     IP_BLOCKED = False
     panels = load_panels()
-    if not panels: return "❌ No panels found in panels.json!"
+    if not panels: return "❌ No panels found! Pehle /sendpanel se panels.json file bhejo."
 
     used_numbers = load_used_numbers()
     stats = {"success": 0, "already_registered": 0, "already_used_skip": 0, "otp_send_fail": 0, "otp_timeout": 0, "otp_verify_fail": 0, "login_fail": 0, "exceptions": 0, "ip_blocked_skipped": 0}
@@ -443,7 +443,7 @@ def run_automation_script():
     )
 
 # ============================================================================
-#  ██  FLASK WEB SERVER (For Render Web Service Port Binding)  ██
+#  ██  FLASK WEB SERVER  ██
 # ============================================================================
 
 app_flask = Flask(__name__)
@@ -466,10 +466,21 @@ async def start_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     if update.effective_user.id != AUTHORIZED_USER_ID: return
     await update.message.reply_text(
         "⚡ **BetFit Automation Bot**\n\n"
-        "/run - Automation start karne ke liye\n"
-        "/status - Check karne ke liye ki script chal rahi hai ya nahi\n"
-        "/file - Generated tokens file (`betfit_tokens.txt`) download karne ke liye"
+        "📁 `/sendpanel` - Chat me `panels.json` file bhej kar save karo\n"
+        "🚀 `/run` - Automation start karo\n"
+        "📊 `/status` - Check karo script chal rahi hai ya nahi\n"
+        "📥 `/file` - Generated tokens file download karo"
     )
+
+async def handle_document(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    if update.effective_user.id != AUTHORIZED_USER_ID: return
+    document = update.message.document
+    if document and document.file_name.endswith('.json'):
+        file = await context.bot.get_file(document.file_id)
+        await file.download_to_drive(PANELS_FILE)
+        await update.message.reply_text("✅ `panels.json` successfully save ho gayi hai! Ab aap `/run` command use kar sakte hain.")
+    else:
+        await update.message.reply_text("❌ Kripya valid `.json` file bhejiye.")
 
 async def run_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
     global is_running
@@ -489,6 +500,13 @@ async def run_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
         except Exception as e:
             result_msg = f"❌ Error: {str(e)}"
         is_running = False
+        
+        # Completion message bhejne ke liye
+        import asyncio
+        async def send_msg():
+            bot = context.bot
+            await bot.send_message(chat_id=update.effective_chat.id, text=result_msg)
+        asyncio.run(send_msg())
 
     threading.Thread(target=background_task).start()
 
@@ -507,18 +525,15 @@ async def file_cmd(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await update.message.reply_text("❌ Abhi tak koi `betfit_tokens.txt` file generate nahi hui hai.")
 
 def main():
-    # Flask ko ek background thread me start karte hain taaki Render ka Port binding requirement poora ho jaye
     threading.Thread(target=run_flask, daemon=True).start()
-    print("🌐 Flask Web Server started in background thread.")
-
-    # Telegram bot app initialize aur run karna
+    
     app = ApplicationBuilder().token(TELEGRAM_BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start_cmd))
     app.add_handler(CommandHandler("run", run_cmd))
     app.add_handler(CommandHandler("status", status_cmd))
     app.add_handler(CommandHandler("file", file_cmd))
+    app.add_handler(MessageHandler(filters.Document.ALL, handle_document))
     
-    print("🤖 Telegram Bot is running and polling...")
     app.run_polling()
 
 if __name__ == "__main__":
