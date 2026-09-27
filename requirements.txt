@@ -1,3 +1,5 @@
+python-telegram-bot
 requests
+faker
+urllib3
 flask
-gunicorn
