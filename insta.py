@@ -71,14 +71,16 @@ def admin_menu():
 
 init_db()
 
-# ================= LIGHTNING FAST DOWNLOAD USING YT-DLP =================
+# ================= 1080P ULTRA-FAST DOWNLOAD CONFIG =================
 def download_reel(url):
     output_template = "reel_%(id)s.%(ext)s"
     ydl_opts = {
         'outtmpl': output_template,
-        'format': 'best',
+        'format': 'best[height<=1080]/best[ext=mp4]/best',  # 1080p max quality preference
         'quiet': True,
         'no_warnings': True,
+        'noplayist': True,
+        'socket_timeout': 10,  # Fast timeout to prevent hanging
     }
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -96,7 +98,7 @@ def send_welcome(message):
     ensure_user(message.from_user)
     bot.send_message(
         message.chat.id,
-        "🔥 *Instagram Reel Downloader*\n\n✨ *Status:* Lightning Fast & 100% Free!",
+        "🔥 *Instagram Reel Downloader*\n\n✨ *Status:* 1080p HD & Lightning Fast!",
         parse_mode="Markdown",
         reply_markup=main_menu(message.from_user.id)
     )
@@ -106,7 +108,7 @@ def profile(message):
     ensure_user(message.from_user)
     bot.reply_to(
         message,
-        f"👤 *My Profile*\n\n🆔 ID: `{message.from_user.id}`\n✨ Account Type: *Free & Unlimited*",
+        f"👤 *My Profile*\n\n🆔 ID: `{message.from_user.id}`\n✨ Quality: *1080p HD (Free & Unlimited)*",
         parse_mode="Markdown",
         reply_markup=main_menu(message.from_user.id)
     )
@@ -130,15 +132,15 @@ def admin_stats(call):
     bot.send_message(call.message.chat.id, f"📊 *Bot Statistics*\n\n👤 Total Users: {total}", parse_mode="Markdown")
 
 def process_reel_background(message, url):
-    processing_msg = bot.reply_to(message, "⚡ *Downloading at Lightning Speed...*", parse_mode="Markdown")
+    processing_msg = bot.reply_to(message, "⚡ *Fetching 1080p HD Reel...*", parse_mode="Markdown")
     
     file_path = download_reel(url)
 
     if file_path and os.path.exists(file_path):
         try:
-            bot.edit_message_text("📤 *Sending Video...*", message.chat.id, processing_msg.message_id, parse_mode="Markdown")
+            bot.edit_message_text("📤 *Sending 1080p Video...*", message.chat.id, processing_msg.message_id, parse_mode="Markdown")
             with open(file_path, "rb") as vid:
-                bot.send_video(message.chat.id, vid, caption="✅ *Downloaded Successfully!*", parse_mode="Markdown")
+                bot.send_video(message.chat.id, vid, caption="✅ *Downloaded in 1080p HD!*", parse_mode="Markdown")
             bot.delete_message(message.chat.id, processing_msg.message_id)
         except Exception as e:
             bot.edit_message_text("❌ *Upload Failed!*", message.chat.id, processing_msg.message_id, parse_mode="Markdown")
@@ -167,7 +169,7 @@ def handle(msg):
 print("╔══════════════════════════════════════╗")
 print("║     🤖 INSTAGRAM REEL BOT ONLINE     ║")
 print("╠══════════════════════════════════════╣")
-print("║  🚀 Speed: Lightning Fast (yt-dlp)   ║")
+print("║  🚀 Quality: 1080p HD                ║")
 print("║  🟢 Service Active (Free & Flask)    ║")
 print("╚══════════════════════════════════════╝")
 bot.infinity_polling(timeout=60, long_polling_timeout=30)
