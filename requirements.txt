@@ -3,3 +3,4 @@ Flask
 requests
 firebase-admin
 aiohttp
+urllib3<2.0
