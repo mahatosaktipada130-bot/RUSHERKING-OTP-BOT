@@ -10,6 +10,7 @@ Firebase SMS Dashboard Bot — FREE Edition (No Refer / No Credits / Manual Refr
 - ⚡ Fast OTP delivery (0.5s polling)
 - 📉 Render-optimized (bandwidth saving)
 - Flask keep-alive server
+- ✅ python-telegram-bot v20+ compatible
 """
 
 import os
@@ -49,7 +50,7 @@ logging.basicConfig(
 logger = logging.getLogger("FirebaseSMSBot")
 
 # ============================================================
-# CONSTANTS (⚡ Speed + 📉 Bandwidth Optimized)
+# CONSTANTS
 # ============================================================
 FB_REQUEST_TIMEOUT = 6
 FB_RETRY_MAX = 0
@@ -59,12 +60,10 @@ FB_MESSAGES_LIMIT = 5
 MAX_FIREBASES = 40
 CLEANUP_INTERVAL = 60
 
-# ⚡ Fast OTP: 0.5s polling
 SMS_MONITOR_INTERVAL = 0.5
 SMS_MONITOR_DURATION = 300
 SMS_MONITOR_IDLE_TIMEOUT = 600
 
-# 📉 Admin panel edit interval
 ADMIN_PANEL_EDIT_INTERVAL = 5
 
 WELCOME_IMAGE_URL = "https://i.ibb.co/cKM4HgWZ/file-000000000b5482089195baf993bd9642.png"
@@ -81,7 +80,6 @@ FLASK_PORT = int(os.getenv("FLASK_PORT", os.getenv("PORT", 8080)))
 ACCESS_CHECK_INTERVAL = 60
 JOIN_CACHE_TTL = 60
 
-# ⚡ Global HTTP session
 GLOBAL_HTTP_SESSION: Optional[aiohttp.ClientSession] = None
 _user_join_cache: Dict[int, Tuple[bool, float]] = {}
 
@@ -187,7 +185,6 @@ async def close_http_session():
 # FILE HELPERS
 # ============================================================
 def _load_required_channels():
-    """Default channels hataye — sirf admin jo add kare wahi rahenge."""
     try:
         with open(FORCE_JOIN_FILE, "r", encoding="utf-8") as fh:
             saved = json.load(fh)
@@ -817,7 +814,7 @@ BOT_USERNAME: str = "Otp_random_bot"
 
 
 # ============================================================
-# FORCE JOIN (Admin controlled, cache-based)
+# FORCE JOIN
 # ============================================================
 def _is_member_status(status: str) -> bool:
     return status in {"member", "administrator", "creator"}
@@ -895,9 +892,6 @@ def build_forcejoin_caption(first_name: str = "User") -> str:
     )
 
 
-# ============================================================
-# WELCOME CAPTION (No refer / No credits)
-# ============================================================
 def build_welcome_caption_joined(first_name: str, user_id: int) -> str:
     safe_name = (first_name or "User").strip()
     return (
@@ -909,9 +903,6 @@ def build_welcome_caption_joined(first_name: str, user_id: int) -> str:
     )
 
 
-# ============================================================
-# SEND WELCOME
-# ============================================================
 async def send_welcome_photo(chat_id: int, first_name: str, *,
                               user_id: int = 0,
                               show_force_join: bool = False,
@@ -945,7 +936,7 @@ async def send_welcome_photo(chat_id: int, first_name: str, *,
 
 
 # ============================================================
-# ACCESS MIDDLEWARE (Only maintenance + force join)
+# ACCESS MIDDLEWARE
 # ============================================================
 async def _require_access(update: Update, context: ContextTypes.DEFAULT_TYPE,
                           *, edit_target=None):
@@ -1503,7 +1494,6 @@ async def generate_number_callback(update: Update, context: ContextTypes.DEFAULT
     devices = dict(global_device_cache.get("devices") or {})
     sess["fb_list"] = list(global_fb_list)
 
-    # ⚡ Agar cache empty hai → ek baar fresh scan karo
     if not devices and global_fb_list:
         await _safe_edit_callback_message(
             q,
@@ -1540,7 +1530,6 @@ async def generate_number_callback(update: Update, context: ContextTypes.DEFAULT
 
     stop_sms_monitor(uid)
 
-    # ⚡ Instant start with empty baseline — first-cycle suppress will skip old SMS
     start_sms_monitor(
         context.bot, uid, chat_id, device_id, unlimited=True,
         baseline_fingerprints=set(),
@@ -1852,7 +1841,6 @@ async def _sms_monitor_loop(bot, uid: int, chat_id: int, device_id: str,
                              fb_url: str = "", task_token=None, state: dict = None):
     started = time.monotonic()
     seen_fingerprints = set(baseline_fingerprints or ())
-    # 🛡️ FIRST CYCLE SUPPRESS — purane SMS forward mat karo
     suppress_first_cycle = not bool(baseline_fingerprints)
     session = await get_http_session()
     real_cid = device_id
@@ -1893,7 +1881,6 @@ async def _sms_monitor_loop(bot, uid: int, chat_id: int, device_id: str,
             pairs = _newest_with_keys(data, limit=10)
             current_fps = [(k, m, _msg_fingerprint(k, m)) for k, m in pairs]
 
-            # 🛡️ SUPPRESS FIRST CYCLE
             if suppress_first_cycle:
                 for _, _, fp in current_fps:
                     seen_fingerprints.add(fp)
@@ -2052,7 +2039,6 @@ async def admin_callback(update: Update, context: ContextTypes.DEFAULT_TYPE):
             or data.startswith("admin_fb_delete:")):
         _stop_admin_panel_live_task(uid)
 
-    # ⚡ MANUAL FIREBASE REFRESH (Sirf Admin)
     if data == "admin_manual_refresh":
         try:
             await q.edit_message_text(
@@ -2601,7 +2587,7 @@ async def scan_and_show(update, context, edit_target=None, fb_idx=None):
 
 
 # ============================================================
-# MAINTENANCE LOOP (cleanup only)
+# MAINTENANCE LOOP
 # ============================================================
 async def _maintenance_loop(bot):
     while True:
@@ -2614,7 +2600,6 @@ async def _maintenance_loop(bot):
             for uid, task in list(admin_panel_live_tasks.items()):
                 if task.done():
                     admin_panel_live_tasks.pop(uid, None)
-            # Cleanup expired join cache
             now = time.time()
             for uid, (_, ts) in list(_user_join_cache.items()):
                 if now - ts > JOIN_CACHE_TTL * 2:
@@ -2660,7 +2645,7 @@ async def _telegram_error_handler(update: object, context: ContextTypes.DEFAULT_
 def main():
     global bot_instance
     print("=" * 60)
-    print("  🔥 Firebase Connector — OTP Bot FREE Edition")
+    print("  🔥 Firebase Connector — OTP Bot FREE Edition (PTB v20+)")
     print(f"  Max Firebases: {MAX_FIREBASES}")
     print(f"  Global FBs: {len(global_fb_list)}")
     print(f"  Force-join channels: {len(REQUIRED_CHANNELS)}")
@@ -2705,7 +2690,6 @@ def main():
         logger.info("⚡ Global HTTP session ready")
         application.bot_data["maintenance_task"] = asyncio.create_task(
             _maintenance_loop(application.bot))
-        # 📌 Auto device refresh hata diya — sirf admin manual button se refresh hoga
 
     async def _post_stop_with_cleanup(application):
         task = application.bot_data.pop("maintenance_task", None)
