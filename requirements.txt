@@ -3,4 +3,3 @@ Flask
 requests
 firebase-admin
 aiohttp
-imghdr
